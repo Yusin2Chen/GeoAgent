@@ -40,4 +40,4 @@ Contributions are welcome! Please see our contributing guidelines for details on
 GeoAgent is licensed under the MIT License. See LICENSE for more information.
 
 ## Acknowledgement
-Thanks partial code for [the help from ](https://github.com/NirantK/agentai)
+Thanks for the help from (https://github.com/NirantK/agentai)
