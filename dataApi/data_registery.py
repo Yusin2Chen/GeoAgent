@@ -81,10 +81,21 @@ class DataRegistry:
         Return a list of (function_name, function) tuples, filtered by bbox and timeinterval if provided.
         """
         if query_bbox and query_interval:
+            def _inetset(func):
+                bBox_interset = [_bBox.intersects(query_bbox) for _bBox in func['bBox']]
+                return any(bBox_interset)
+
+            def _matched(func):
+                time_matched = [matches_interval(_time, query_interval) for _time in func['timeInterval']]
+                return any(time_matched)
+
+            def _sesnor(func):
+                if sensor == None:
+                    return True
+                return func['sensor'] == sensor
+
             return [(name, func['func']) for name, func in self.functions.items()
-                    if func['bBox'].intersects(query_bbox)
-                    and matches_interval(func['timeInterval'], query_interval)
-                    and func['sensor'] == sensor]
+                    if _inetset(func) and _matched(func) and _sesnor(func)]
         return list(self.functions.items())
 
     def to_list_infos(self, query_bbox: BBox, query_interval: tuple[datetime.datetime, datetime.datetime], sensor: str):
@@ -92,10 +103,21 @@ class DataRegistry:
         Return a list of (function_name, function) tuples, filtered by bbox and timeinterval if provided.
         """
         if query_bbox and query_interval:
+            def _inetset(func):
+                bBox_interset = [_bBox.intersects(query_bbox) for _bBox in func['bBox']]
+                return any(bBox_interset)
+
+            def _matched(func):
+                time_matched = [matches_interval(_time, query_interval) for _time in func['timeInterval']]
+                return any(time_matched)
+
+            def _sesnor(func):
+                if sensor == None:
+                    return True
+                return func['sensor'] == sensor
+
             return [(name, self.function_schema(func['func'])) for name, func in self.functions.items()
-                    if func['bBox'].intersects(query_bbox)
-                    and matches_interval(func['timeInterval'], query_interval)
-                    and func['sensor'] == sensor]
+                    if _inetset(func) and _matched(func) and _sesnor(func)]
         return list(self.functions.items())
 
     def add(self):
@@ -103,7 +125,7 @@ class DataRegistry:
         Register a function to the registry, allowing sensor assignment based on the function's local variables after execution.
         """
         def decorator(cls):
-            print(f"Decorating class: {cls.__name__}")  # Confirming which class is being decorated
+            #print(f"Decorating class: {cls.__name__}")  # Confirming which class is being decorated
             instance = cls()
 
             class Wrapped(cls):
@@ -123,13 +145,15 @@ class DataRegistry:
                     Wraps the method to access instance variables (like sensors).
                     """
                     if hasattr(instance, 'bBox'):
-                        bBox = instance.bBox[0]  #ToDo
+                        bBox = instance.bBox  #ToDo
                     else:
                         bBox = None
+
                     if hasattr(instance, 'timeInterval'):
-                        timeInterval = next(instance.timeInterval) #ToDo
+                        timeInterval = list(instance.timeInterval) #ToDo
                     else:
                         timeInterval = None
+
                     if hasattr(instance, 'sensor'):
                         sensor = instance.sensor #ToDo
                     else:

@@ -31,10 +31,11 @@ class S1_GRD:
         else:
             bBox = [[-180, -90, 180, 90]]
             self.bBox = tuple([BBox.from_list(x) for x in bBox])
-            self.timeInterval = tuple([iso8601.parse_date("2014-10-03T00:00:00Z"), iso8601.parse_date("2024-03-13T18:04:55Z")])
+            self.timeInterval = iter(tuple([(iso8601.parse_date("2014-10-03T00:00:00Z"), iso8601.parse_date("2024-03-13T18:04:55Z"))]))
+
 
     @staticmethod
-    def get_S1_GRD(polarization: str, instrumentmode: str):
+    def get_S1_GRD(polarization: str = '', instrumentmode: str = ''):
         """
         The Sentinel-1 mission provides data from a dual-polarization C-band Synthetic Aperture Radar (SAR) instrument
         Example: img = S1_GRD.get_S1_GRD(polarization='VV', instrumentmode='IW')
