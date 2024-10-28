@@ -46,7 +46,7 @@ class FCSiamDiff:
         :param x: input images of shape (b, t, c, h, w)
         :return: predicted change masks of size (b, classes, h, w)
         """
-        model = torchgeo.FCSiamDiff()
+        model = torchgeo.FCSiamDiff(weight='./FCSiamDiff.pth')
         return model(x)
 
 
