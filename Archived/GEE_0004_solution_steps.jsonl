@@ -1,0 +1,2 @@
+{"curr_task": {"0": {"task": "let's print hello to start.", "code": "import ee\nee.Initialize(project='ee-cyx669521')\n", "score": 1, "ori_id": "0"}}, "node_id": 0, "node_value": 1.0, "node_visits": 2}
+{"curr_task": {"0": {"task": "let's print hello to start.", "code": "import ee\nee.Initialize(project='ee-cyx669521')\n", "score": 1, "ori_id": "0"}}, "node_id": 0, "node_value": 1.0, "node_visits": 2}
