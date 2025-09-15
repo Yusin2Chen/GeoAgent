@@ -1,0 +1,22 @@
+{
+  "1": {
+    "task": "Initialize the environment and define the region of interest for Jokkmokk, Sweden, using the asset path 'projects/ee-ecresener5/assets/jokkmokk'.",
+    "code": "import ee\nimport geemap\n\ntry:\n    ee.Initialize()\nexcept Exception as e:\n    ee.Authenticate()\n    ee.Initialize()\n\nroi = ee.FeatureCollection('projects/ee-ecresener5/assets/jokkmokk')\nbbox = roi.geometry().bounds()"
+  },
+  "2": {
+    "task": "Define a function to mask clouds and shadows in Sentinel-2 images using the 'SCL' band, and a second function to calculate the Normalized Difference Vegetation Index (NDVI) using the 'B8' and 'B4' bands.",
+    "code": "def mask_s2_clouds(image):\n    \"\"\"Masks clouds and shadows in a Sentinel-2 SR image using the SCL band.\"\"\"\n    scl = image.select('SCL')\n    # Classes to mask: 3 (cloud shadow), 8 (cloud medium prob), 9 (cloud high prob), 10 (cirrus)\n    mask = scl.remap([3, 8, 9, 10], [0, 0, 0, 0], 1)\n    return image.updateMask(mask).copyProperties(image, [\"system:time_start\"])\n\ndef add_ndvi(image):\n    \"\"\"Calculates and adds an NDVI band to a Sentinel-2 image.\"\"\"\n    ndvi = image.normalizedDifference(['B8', 'B4']).rename('NDVI')\n    return image.addBands(ndvi)"
+  },
+  "3": {
+    "task": "For each year from 2019 to 2021, create a cloud-masked, median composite image for the summer period (June 1 to August 31) over the defined region, calculate NDVI, and rename the bands to include the year.",
+    "code": "years = [2019, 2020, 2021]\nannual_composites = []\n\nfor year in years:\n    start_date = f'{year}-06-01'\n    end_date = f'{year}-08-31'\n    \n    s2_sr_collection = ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED') \\\n        .filterBounds(roi) \\\n        .filterDate(start_date, end_date)\n    \n    processed_collection = s2_sr_collection.map(mask_s2_clouds).map(add_ndvi)\n    \n    median_composite = processed_collection.median().clip(roi)\n    \n    bands_to_select = ['B2', 'B3', 'B4', 'B5', 'B6', 'B8', 'NDVI']\n    new_band_names = [f'{band}_{year}' for band in bands_to_select]\n    renamed_composite = median_composite.select(bands_to_select).rename(new_band_names)\n    \n    annual_composites.append(renamed_composite)"
+  },
+  "4": {
+    "task": "Combine the three annual composite images into a single multi-band image. Then, initialize an interactive map and display the region of interest and a true-color view of the 2021 composite.",
+    "code": "final_composite = ee.Image.cat(annual_composites)\n\nMap = geemap.Map()\nMap.centerObject(roi, 8)\n\nvis_params = {\n    'bands': ['B4_2021', 'B3_2021', 'B2_2021'],\n    'min': 0,\n    'max': 3000,\n    'gamma': 1.4\n}\n\nMap.addLayer(roi, {'color': 'yellow'}, 'Region of Interest', False)\nMap.addLayer(final_composite, vis_params, 'True Color Composite (2021)')"
+  },
+  "5": {
+    "task": "Export the final multi-band composite image to a Google Drive folder named 'EarthEngineExports'. The exported file will be a cloud-optimized GeoTIFF named 'Annual_Summer_Composites_Jokkmokk' with a 10-meter spatial resolution.",
+    "code": "output_image_name = 'Annual_Summer_Composites_Jokkmokk'\n\nexport_task = ee.batch.Export.image.toDrive(\n    image=final_composite.toFloat(),\n    description=output_image_name,\n    folder='EarthEngineExports',\n    fileNamePrefix=output_image_name,\n    region=bbox.getInfo()['coordinates'],\n    scale=10,\n    maxPixels=1e10,\n    fileFormat='GeoTIFF',\n    formatOptions={'cloudOptimized': True}\n)\n\nexport_task.start()"
+  }
+}
