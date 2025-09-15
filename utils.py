@@ -19,7 +19,7 @@ MAX_MEMORY_USAGE = 512  # MB
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key='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')
+    api_key='sk-or-v1-5xxxxxxxxxxxxxxxxxxxxxxxxxxx')
 
 # --- Pydantic Models ---
 # Models are now simpler as they don't need to hold logprobs.
@@ -1159,3 +1159,4 @@ def save_rollout_snapshot_to_jsonl(filename: str, rollout_key: str, data: Dict):
         error_line = {"rollout_key": rollout_key, "error": f"Serialization failed: {e}"}
         with open(filename, "a", encoding="utf-8") as f:
             f.write(json.dumps(error_line) + "\n")
+
